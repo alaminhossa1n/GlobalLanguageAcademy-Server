@@ -3,7 +3,7 @@ var jwt = require('jsonwebtoken');
 const app = express();
 const cors = require('cors');
 require('dotenv').config()
-// const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -49,6 +49,8 @@ async function run() {
 
         const userCollection = client.db("GLADB").collection("users");
         const classCollection = client.db("GLADB").collection("class");
+        const cartCollection = client.db("GLADB").collection("carts");
+        const paymentCollection = client.db("GLADB").collection("payments");
 
 
         // ..........verifyAdmin...............
@@ -63,6 +65,7 @@ async function run() {
             next()
         }
         // ..........verifyAdmin...............
+
         // ..........verifyInstructor...............
         const verifyInstructor = async (req, res, next) => {
             const email = req.decode.email;
@@ -87,11 +90,11 @@ async function run() {
             res.send({ token })
         })
 
-        // menu
-        // app.get('/menu', async (req, res) => {
-        //     const result = await menuCollection.find().toArray();
-        //     res.send(result);
-        // })
+        // class
+        app.get('/class', async (req, res) => {
+            const result = await classCollection.find().toArray();
+            res.send(result);
+        })
 
         app.post('/class', verifyJWT, verifyInstructor, async (req, res) => {
             const newItem = req.body
@@ -99,20 +102,34 @@ async function run() {
             res.send(result)
         })
 
-        // app.delete('/menu/:id', verifyJWT, verifyAdmin, async (req, res) => {
-        //     const id = req.params.id
-        //     const query = { _id: new ObjectId(id) }
-        //     const result = await menuCollection.deleteOne(query)
-        //     res.send(result)
-        // })
+        // ................my class..........
 
-        // // reviews
-        // app.get('/reviews', async (req, res) => {
-        //     const result = await reviewCollection.find().toArray();
-        //     res.send(result);
-        // })
+        app.get('/my-class', async (req, res) => {
+            const email = req.query.email;
+
+            // if (!email) {
+            //     res.send([])
+            // }
+
+            // const decodedEmail = req.decode.email;
+            // if (decodedEmail !== email) {
+            //     return res.status(403).send({ error: true, message: 'forbidden access' })
+            // }
+
+            const query = { instructorEmail: email }
+            const result = await classCollection.find(query).toArray();
+            res.send(result);
+        })
+        // ................my class..........
+
 
         // ..............users................
+        app.get('/instructors', async (req, res) => {
+            const query = { role: 'instructor' }
+            const result = await userCollection.find(query).toArray();
+            res.send(result)
+        })
+
         app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray()
             res.send(result);
@@ -121,10 +138,6 @@ async function run() {
         app.get('/users/role/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email: email }
-
-            // if (req.decode.email !== email) {
-            //     res.send({ admin: false })
-            // }
 
             const user = await userCollection.findOne(query)
             const result = { role: user?.role }
