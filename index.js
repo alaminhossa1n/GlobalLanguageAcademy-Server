@@ -107,9 +107,17 @@ app.post('/jwt', (req, res) => {
 
 // class
 app.get('/class', async (req, res) => {
-    const result = await classCollection.find().toArray();
+    const approvedClasses = await classCollection.find({ status: 'approved' }).toArray();
+    const allClasses = await classCollection.find().toArray();
+
+    const result = {
+        approvedClasses,
+        allClasses,
+    };
+
     res.send(result);
-})
+});
+
 
 app.post('/class', verifyJWT, verifyInstructor, async (req, res) => {
     const newItem = req.body
@@ -121,15 +129,6 @@ app.post('/class', verifyJWT, verifyInstructor, async (req, res) => {
 
 app.get('/my-class', async (req, res) => {
     const email = req.query.email;
-
-    // if (!email) {
-    //     res.send([])
-    // }
-
-    // const decodedEmail = req.decode.email;
-    // if (decodedEmail !== email) {
-    //     return res.status(403).send({ error: true, message: 'forbidden access' })
-    // }
 
     const query = { instructorEmail: email }
     const result = await classCollection.find(query).toArray();
@@ -279,8 +278,17 @@ app.post('/payments', verifyJWT, async (req, res) => {
     const result = await paymentCollection.insertOne(payment);
     const query = { _id: { $in: payment.cartItemID.map(id => new ObjectId(id)) } }
     const deletedResult = await cartCollection.deleteMany(query);
-    res.send({ result, deletedResult })
-})
+
+    // Update fields in classCollection
+    const classQuery = { _id: { $in: payment.menuItemsId.map(id => new ObjectId(id)) } };
+
+    const classUpdateResult = await classCollection.updateMany(classQuery, { $inc: { availableSeats: -1, enrolledStudents: 1 } });
+
+    res.send({ result, deletedResult, classUpdateResult });
+
+});
+
+
 // ...........payment intent............
 // ............
 
