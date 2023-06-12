@@ -46,6 +46,23 @@ const verifyAdmin = async (req, res, next) => {
 // ..........verifyAdmin...............
 
 
+// ..........verifyInstructor...............
+const verifyInstructor = async (req, res, next) => {
+    const email = req.decode.email;
+    const query = { email: email }
+    const user = await userCollection.findOne(query);
+
+    if (user?.role !== 'instructor') {
+        return res.status(403).send({ error: true, message: 'forbidden access' })
+    }
+    next()
+}
+// ..........verifyInstructor...............
+
+
+
+
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xsalsjk.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -79,19 +96,6 @@ const paymentCollection = client.db("GLADB").collection("payments");
 app.get('/', (req, res) => {
     res.send('Language is Coming soon')
 })
-
-// ..........verifyInstructor...............
-const verifyInstructor = async (req, res, next) => {
-    const email = req.decode.email;
-    const query = { email: email }
-    const user = await userCollection.findOne(query);
-
-    if (user?.role !== 'instructor') {
-        return res.status(403).send({ error: true, message: 'forbidden access' })
-    }
-    next()
-}
-// ..........verifyInstructor...............
 
 
 // jwt
