@@ -32,6 +32,19 @@ const verifyJWT = (req, res, next) => {
 }
 // ...............jwt verify.................
 
+// ..........verifyAdmin...............
+const verifyAdmin = async (req, res, next) => {
+    const email = req.decode.email;
+    const query = { email: email }
+    const user = await userCollection.findOne(query);
+
+    if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden access' })
+    }
+    next()
+}
+// ..........verifyAdmin...............
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xsalsjk.mongodb.net/?retryWrites=true&w=majority`;
@@ -66,20 +79,6 @@ const paymentCollection = client.db("GLADB").collection("payments");
 app.get('/', (req, res) => {
     res.send('Language is Coming soon')
 })
-
-
-// ..........verifyAdmin...............
-const verifyAdmin = async (req, res, next) => {
-    const email = req.decode.email;
-    const query = { email: email }
-    const user = await userCollection.findOne(query);
-
-    if (user?.role !== 'admin') {
-        return res.status(403).send({ error: true, message: 'forbidden access' })
-    }
-    next()
-}
-// ..........verifyAdmin...............
 
 // ..........verifyInstructor...............
 const verifyInstructor = async (req, res, next) => {
@@ -256,7 +255,6 @@ app.delete('/carts/:id', async (req, res) => {
 })
 // ..............carts................
 
-
 // ...........payment intent............
 
 // ..........enrolled...........
@@ -297,10 +295,7 @@ app.post('/payments', async (req, res) => {
 
 });
 
-
 // ...........payment intent............
-
-
 
 app.listen(port, () => {
     console.log(`Global Language on port ${port}`);
