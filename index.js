@@ -259,6 +259,25 @@ app.delete('/carts/:id', async (req, res) => {
 
 
 // ...........payment intent............
+
+// ..........enrolled...........
+
+app.get('/enrolled', async (req, res) => {
+    const email = req.query.email;
+    // if (!email) {
+    //     res.send([])
+    // }
+
+    // const decodedEmail = req.decode.email;
+    // if (decodedEmail !== email) {
+    //     return res.status(403).send({ error: true, message: 'forbidden access' })
+    // }
+
+    const query = { email: email }
+    const result = await paymentCollection.find(query).toArray();
+    res.send(result);
+})
+
 app.post('/create-payment-intent', async (req, res) => {
     const { price } = req.body;
     const amount = price * 100;
@@ -273,7 +292,7 @@ app.post('/create-payment-intent', async (req, res) => {
 })
 
 // payment
-app.post('/payments', verifyJWT, async (req, res) => {
+app.post('/payments', async (req, res) => {
     const payment = req.body;
     const result = await paymentCollection.insertOne(payment);
     const query = { _id: { $in: payment.cartItemID.map(id => new ObjectId(id)) } }
@@ -290,7 +309,6 @@ app.post('/payments', verifyJWT, async (req, res) => {
 
 
 // ...........payment intent............
-// ............
 
 
 
