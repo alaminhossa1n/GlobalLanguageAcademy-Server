@@ -119,7 +119,7 @@ app.get('/class', async (req, res) => {
 });
 
 
-app.post('/class', verifyJWT, verifyInstructor, async (req, res) => {
+app.post('/class', async (req, res) => {
     const newItem = req.body
     const result = await classCollection.insertOne(newItem)
     res.send(result)
@@ -127,9 +127,8 @@ app.post('/class', verifyJWT, verifyInstructor, async (req, res) => {
 
 // ................my class..........
 
-app.get('/my-class', async (req, res) => {
+app.get('/my-class', verifyJWT, verifyInstructor, async (req, res) => {
     const email = req.query.email;
-
     const query = { instructorEmail: email }
     const result = await classCollection.find(query).toArray();
     res.send(result);
@@ -168,7 +167,7 @@ app.patch('/approved-class/:id', async (req, res) => {
 
 
 // ..............users................
-app.get('/instructors', async (req, res) => {
+app.get('/instructors',  async (req, res) => {
     const query = { role: 'instructor' }
     const result = await userCollection.find(query).toArray();
     res.send(result)
