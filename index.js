@@ -137,6 +137,8 @@ app.get('/my-class', verifyJWT, verifyInstructor, async (req, res) => {
     res.send(result);
 })
 // ................my class..........
+
+
 // ................Approved class..........
 
 app.patch('/approved-class/:id', async (req, res) => {
