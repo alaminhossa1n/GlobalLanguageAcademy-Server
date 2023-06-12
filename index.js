@@ -264,15 +264,6 @@ app.delete('/carts/:id', async (req, res) => {
 
 app.get('/enrolled', async (req, res) => {
     const email = req.query.email;
-    // if (!email) {
-    //     res.send([])
-    // }
-
-    // const decodedEmail = req.decode.email;
-    // if (decodedEmail !== email) {
-    //     return res.status(403).send({ error: true, message: 'forbidden access' })
-    // }
-
     const query = { email: email }
     const result = await paymentCollection.find(query).toArray();
     res.send(result);
